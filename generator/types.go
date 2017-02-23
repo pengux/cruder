@@ -1,59 +1,50 @@
 package generator
 
-const (
-	typeExecerInterface     = "cruderExecer"
-	typeQueryerInterface    = "cruderQueryer"
-	typeQueryRowerInterface = "cruderQueryRower"
+type cruderType string
 
-	typeExecerInterfaceTmpl = `
+const (
+	typeExecerInterface     cruderType = "cruderExecer"
+	typeQueryerInterface    cruderType = "cruderQueryer"
+	typeQueryRowerInterface cruderType = "cruderQueryRower"
+	typeSQLFilterInterface  cruderType = "cruderSQLFilter"
+	typeSQLSorterInterface  cruderType = "cruderSQLSorter"
+)
+
+var cruderTypes = map[cruderType]string{
+	typeExecerInterface: `
 type cruderExecer interface {
 	Exec(string, ...interface{}) (sql.Result, error)
 }
-`
-	typeQueryerInterfaceTmpl = `
+`,
+	typeQueryerInterface: `
 type cruderQueryer interface {
 	Query(string, ...interface{}) (*sql.Rows, error)
 }
-`
-	typeQueryRowerInterfaceTmpl = `
+`,
+	typeQueryRowerInterface: `
 type cruderQueryRower interface {
 	QueryRow(string, ...interface{}) *sql.Row
 }
-`
-)
-
-// GenerateExecerInterface adds the typeExecerInterfaceTmpl to the
-// header buffer. It keeps track of whether the type is generated or not
-// and thus can be called multiple times safely.
-func (g *Generator) GenerateExecerInterface() {
-	if g.typeExist(typeExecerInterface) {
-		return
-	}
-
-	g.HeaderPrintf(typeExecerInterfaceTmpl)
-	g.existingTypes = append(g.existingTypes, typeExecerInterface)
+`,
+	typeSQLFilterInterface: `
+type cruderSQLFilter interface {
+	Where() (string, []interface{})
+}
+`,
+	typeSQLSorterInterface: `
+type cruderSQLSorter interface {
+	OrderBy() string
+}
+`,
 }
 
-// GenerateQueryerInterface adds the typeQueryerInterfaceTmpl to the
-// header buffer. It keeps track of whether the type is generated or not
-// and thus can be called multiple times safely.
-func (g *Generator) GenerateQueryerInterface() {
-	if g.typeExist(typeQueryerInterface) {
+// GenerateType adds the cruderType to the header buffer. It keeps track of whether
+// the type is generated or not and thus can be called multiple times safely.
+func (g *Generator) GenerateType(t cruderType) {
+	if g.typeExist(t) {
 		return
 	}
 
-	g.HeaderPrintf(typeQueryerInterfaceTmpl)
-	g.existingTypes = append(g.existingTypes, typeQueryerInterface)
-}
-
-// GenerateQueryRowerInterface adds the typeQueryRowerInterfaceTmpl to the
-// header buffer. It keeps track of whether the type is generated or not
-// and thus can be called multiple times safely.
-func (g *Generator) GenerateQueryRowerInterface() {
-	if g.typeExist(typeQueryerInterface) {
-		return
-	}
-
-	g.HeaderPrintf(typeQueryRowerInterfaceTmpl)
-	g.existingTypes = append(g.existingTypes, typeQueryerInterface)
+	g.HeaderPrintf(cruderTypes[t])
+	g.existingTypes = append(g.existingTypes, t)
 }

@@ -6,8 +6,10 @@ import (
 	"go/format"
 	"go/types"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const (
@@ -22,12 +24,16 @@ type (
 		t                     *types.Struct
 		structModel           string
 		header, body          bytes.Buffer // Accumulated output.
-		existingTypes         []string
+		existingTypes         []cruderType
 		TableName             string
+		PkgName               string
 		readFields            map[int]string
 		writeFields           map[int]string
 		primaryFieldOffset    int
 		softDeleteFieldOffset int
+
+		mx      sync.Mutex
+		imports map[string]bool
 	}
 )
 
@@ -47,9 +53,11 @@ func New(pkg *types.Package, structModel string) (*Generator, error) {
 		t:                     t,
 		structModel:           structModel,
 		TableName:             structModel,
+		PkgName:               pkg.Name(),
 		readFields:            make(map[int]string, t.NumFields()),
 		writeFields:           make(map[int]string, t.NumFields()),
 		softDeleteFieldOffset: -1, // -1 disable soft deletion
+		imports:               make(map[string]bool),
 	}
 
 	for i := 0; i < gen.t.NumFields(); i++ {
@@ -71,14 +79,12 @@ func New(pkg *types.Package, structModel string) (*Generator, error) {
 		gen.writeFields[i] = gen.t.Field(i).Name()
 	}
 
-	gen.HeaderPrintf("package %s", pkg.Name())
-	gen.HeaderPrintf("\n")
-	gen.HeaderPrintf("import \"database/sql\"\n") // All methods use this package
+	gen.addImport("database/sql") // All methods use this package
 
 	return gen, nil
 }
 
-// SetReadFields sets the fields that should be returned in reading methods (GetXXX, ListXXX)
+// SetReadFields sets the fields that should be returned in reading operations.
 // The passed in slice will be match against the fieldnames of the struct
 func (g *Generator) SetReadFields(fields []string) error {
 	var fieldNames map[int]string
@@ -97,7 +103,7 @@ func (g *Generator) SetReadFields(fields []string) error {
 	return nil
 }
 
-// SetWriteFields sets the fields that should be returned in writing methods (CreateXXX, UpdateXXX etc.)
+// SetWriteFields sets the fields that should be returned in writing operations.
 // The passed in slice will be match against the fieldnames of the struct
 func (g *Generator) SetWriteFields(fields []string) error {
 	var fieldNames map[int]string
@@ -150,8 +156,14 @@ func (g *Generator) SetSoftDeleteField(f string) error {
 // A prefix can be passed which would be added before each name.
 func (g *Generator) readFieldNames(prefix string) []string {
 	var fieldNames []string
-	for _, s := range g.readFields {
-		fieldNames = append(fieldNames, prefix+s)
+	// Ordered iteration of the map
+	var keys []int
+	for k := range g.readFields {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, k := range keys {
+		fieldNames = append(fieldNames, prefix+g.readFields[k])
 	}
 
 	return fieldNames
@@ -162,8 +174,14 @@ func (g *Generator) readFieldNames(prefix string) []string {
 // name. A prefix can be passed which would be added before each name.
 func (g *Generator) readFieldDBNames(prefix string) []string {
 	var fieldNames []string
-	for i := range g.readFields {
-		fieldNames = append(fieldNames, prefix+g.fieldDBName(i))
+	// Ordered iteration of the map
+	var keys []int
+	for k := range g.readFields {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, k := range keys {
+		fieldNames = append(fieldNames, prefix+g.fieldDBName(k))
 	}
 
 	return fieldNames
@@ -173,8 +191,14 @@ func (g *Generator) readFieldDBNames(prefix string) []string {
 // A prefix can be passed which would be added before each name.
 func (g *Generator) writeFieldNames(prefix string) []string {
 	var fieldNames []string
-	for _, s := range g.writeFields {
-		fieldNames = append(fieldNames, prefix+s)
+	// Ordered iteration of the map
+	var keys []int
+	for k := range g.writeFields {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, k := range keys {
+		fieldNames = append(fieldNames, prefix+g.writeFields[k])
 	}
 
 	return fieldNames
@@ -185,8 +209,14 @@ func (g *Generator) writeFieldNames(prefix string) []string {
 // name. A prefix can be passed which would be added before each name.
 func (g *Generator) writeFieldDBNames(prefix string) []string {
 	var fieldNames []string
-	for i := range g.writeFields {
-		fieldNames = append(fieldNames, prefix+g.fieldDBName(i))
+	// Ordered iteration of the map
+	var keys []int
+	for k := range g.writeFields {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, k := range keys {
+		fieldNames = append(fieldNames, prefix+g.fieldDBName(k))
 	}
 
 	return fieldNames
@@ -212,12 +242,34 @@ func (g *Generator) Printf(in string, args ...interface{}) {
 	fmt.Fprintf(&g.body, in, args...)
 }
 
-// Format returns the gofmt-ed contents of the Generator's buffer.
-func (g *Generator) Format() ([]byte, error) {
-	return format.Source(append(g.header.Bytes(), g.body.Bytes()...))
+func (g *Generator) pkgDecl() []byte {
+	return []byte(fmt.Sprintf("package %s\n", g.PkgName))
 }
 
-func (g *Generator) typeExist(t string) bool {
+func (g *Generator) importsDecl() []byte {
+	var imports []string
+	for i := range g.imports {
+		imports = append(imports, "\""+i+"\"")
+	}
+
+	return []byte(fmt.Sprintf(`
+import (
+	%s
+)
+`, strings.Join(imports, "\n\t")))
+}
+
+// Format returns the gofmt-ed contents of the Generator's buffer.
+func (g *Generator) Format() ([]byte, error) {
+	return format.Source(append(append(g.pkgDecl(), g.importsDecl()...), append(g.header.Bytes(), g.body.Bytes()...)...))
+}
+
+// String output all buffers as string
+func (g *Generator) String() string {
+	return string(g.pkgDecl()) + string(g.importsDecl()) + g.header.String() + g.body.String()
+}
+
+func (g *Generator) typeExist(t cruderType) bool {
 	for _, x := range g.existingTypes {
 		if x == t {
 			return true
@@ -225,7 +277,13 @@ func (g *Generator) typeExist(t string) bool {
 	}
 
 	// Check if type already exist in package
-	return g.pkg.Scope().Lookup(t) != nil
+	return g.pkg.Scope().Lookup(string(t)) != nil
+}
+
+func (g *Generator) addImport(pkg string) {
+	g.mx.Lock()
+	g.imports[pkg] = true
+	g.mx.Unlock()
 }
 
 // Return the name of the field in their DB form. The DB form is taken from the

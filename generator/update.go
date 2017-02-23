@@ -23,7 +23,7 @@ func Update%s(db cruderQueryRower, x %s) (*%s, error) {
 
 // GenerateUpdate generates the Update method for the struct
 func (g *Generator) GenerateUpdate() {
-	g.GenerateQueryRowerInterface()
+	g.GenerateType(typeQueryRowerInterface)
 
 	var setParts []string
 	for i, f := range g.writeFieldDBNames("") {

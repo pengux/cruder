@@ -8,7 +8,7 @@ const (
 func Create%s(db cruderQueryRower, x %s) (*%s, error) {
 	var y %s
 	err := db.QueryRow(
-		` + "`" + `INSERT INTO %s (%s) VALUES %s
+		` + "`" + `INSERT INTO %s (%s) VALUES (%s)
 		RETURNING %s` + "`" + `,
 		%s,
 	).Scan(%s)
@@ -20,7 +20,7 @@ func Create%s(db cruderQueryRower, x %s) (*%s, error) {
 
 // GenerateCreate generates the Create method for the struct
 func (g *Generator) GenerateCreate() {
-	g.GenerateQueryRowerInterface()
+	g.GenerateType(typeQueryRowerInterface)
 
 	g.Printf(createTmpl,
 		g.structModel,

@@ -5,7 +5,7 @@ import "fmt"
 const (
 	deleteTmpl = `
 // Delete%s deletes an entry from DB
-func Delete%s(db cruderExecer, id %s) error {
+func Delete%s(db cruderExecer, id interface{}) error {
 	result, err := db.Exec(
 		` + "`" + `%s` + "`" + `,
 		id,
@@ -28,7 +28,8 @@ func Delete%s(db cruderExecer, id %s) error {
 
 // GenerateDelete generates the Delete method for the struct
 func (g *Generator) GenerateDelete() {
-	g.GenerateExecerInterface()
+	g.GenerateType(typeExecerInterface)
+	g.addImport("errors")
 
 	var deleteQuery string
 	if g.softDeleteFieldOffset != -1 {
@@ -48,7 +49,6 @@ func (g *Generator) GenerateDelete() {
 	g.Printf(deleteTmpl,
 		g.structModel,
 		g.structModel,
-		g.t.Field(g.primaryFieldOffset).Type().String(),
 		deleteQuery,
 	)
 }

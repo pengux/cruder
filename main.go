@@ -29,6 +29,7 @@ const (
 var (
 	funcs           = flag.String("funcs", "", "comma separated list of CRUD functions to generate, e.g. 'create,get,list,update,delete'")
 	output          = flag.String("output", "", "output file name; default srcdir/<struct>_crud.go")
+	pkgName         = flag.String("package", "", "package name for the generated code, default to the same package from input")
 	table           = flag.String("table", "", "table name in the database, default to <struct>")
 	readFields      = flag.String("readfields", "", "Fields in the struct that should be used for read operations (get,list). Default to all fields except the one used for softdelete")
 	writeFields     = flag.String("writefields", "", "Fields in the struct that should be used for write operations (create,update). Default to all fields")
@@ -84,6 +85,10 @@ func main() {
 		log.Fatalf("could not initialize a new generator: %s", err)
 	}
 
+	if len(*pkgName) > 0 {
+		gen.PkgName = *pkgName
+	}
+
 	if len(*table) > 0 {
 		gen.TableName = *table
 	}
@@ -110,6 +115,8 @@ func main() {
 			gen.GenerateCreate()
 		case funcGet:
 			gen.GenerateGet()
+		case funcList:
+			gen.GenerateList()
 		case funcUpdate:
 			gen.GenerateUpdate()
 		case funcDelete:
@@ -120,6 +127,8 @@ func main() {
 	// Format the output
 	out, err := gen.Format()
 	if err != nil {
+		log.Print(gen.String())
+		log.Print(err)
 		log.Fatalf("could not format the generated code, try to compile the code to debug")
 	}
 

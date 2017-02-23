@@ -8,7 +8,7 @@ import (
 const (
 	getTmpl = `
 // Get%s returns a single entry from DB based on primary key
-func Get%s(db cruderQueryRower, id %s) (*%s, error) {
+func Get%s(db cruderQueryRower, id interface{}) (*%s, error) {
 	var y %s
 	err := db.QueryRow(
 		` + "`" + `SELECT %s FROM %s WHERE %s = $1%s` + "`" + `,
@@ -22,7 +22,7 @@ func Get%s(db cruderQueryRower, id %s) (*%s, error) {
 
 // GenerateGet generates the Get method for the struct
 func (g *Generator) GenerateGet() {
-	g.GenerateQueryRowerInterface()
+	g.GenerateType(typeQueryRowerInterface)
 
 	var softDeleteWhere string
 	if g.softDeleteFieldOffset != -1 {
@@ -32,7 +32,6 @@ func (g *Generator) GenerateGet() {
 	g.Printf(getTmpl,
 		g.structModel,
 		g.structModel,
-		g.t.Field(g.primaryFieldOffset).Type().String(),
 		g.structModel,
 		g.structModel,
 		strings.Join(g.readFieldDBNames(""), ", "),
