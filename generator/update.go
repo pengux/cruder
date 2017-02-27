@@ -35,9 +35,14 @@ func (g *Generator) GenerateUpdate() {
 		softDeleteWhere = fmt.Sprintf(" AND %s IS NULL", g.fieldDBName(g.softDeleteFieldOffset))
 	}
 
+	var suffix string
+	if !g.SkipSuffix {
+		suffix = g.structModel
+	}
+
 	g.Printf(updateTmpl,
-		g.structModel,
-		g.structModel,
+		suffix,
+		suffix,
 		g.structModel,
 		g.structModel,
 		g.structModel,

@@ -31,6 +31,7 @@ var (
 	output          = flag.String("output", "", "output file name; default srcdir/<struct>_crud.go")
 	pkgName         = flag.String("package", "", "package name for the generated code, default to the same package from input")
 	table           = flag.String("table", "", "table name in the database, default to <struct>")
+	skipFuncSuffix  = flag.Bool("skipsuffix", false, "Skip adding the struct name as suffix to the generated functions")
 	readFields      = flag.String("readfields", "", "Fields in the struct that should be used for read operations (get,list). Default to all fields except the one used for softdelete")
 	writeFields     = flag.String("writefields", "", "Fields in the struct that should be used for write operations (create,update). Default to all fields")
 	primaryField    = flag.String("primaryfield", "", "the field to use as primary key. Default to 'ID' if it exists in the <struct>")
@@ -92,6 +93,8 @@ func main() {
 	if len(*table) > 0 {
 		gen.TableName = *table
 	}
+
+	gen.SkipSuffix = *skipFuncSuffix
 
 	if len(*readFields) > 0 {
 		gen.SetReadFields(strings.Split(*readFields, ","))

@@ -46,9 +46,14 @@ func (g *Generator) GenerateDelete() {
 		)
 	}
 
+	var suffix string
+	if !g.SkipSuffix {
+		suffix = g.structModel
+	}
+
 	g.Printf(deleteTmpl,
-		g.structModel,
-		g.structModel,
+		suffix,
+		suffix,
 		deleteQuery,
 	)
 }

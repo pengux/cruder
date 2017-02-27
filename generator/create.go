@@ -22,9 +22,14 @@ func Create%s(db cruderQueryRower, x %s) (*%s, error) {
 func (g *Generator) GenerateCreate() {
 	g.GenerateType(typeQueryRowerInterface)
 
+	var suffix string
+	if !g.SkipSuffix {
+		suffix = g.structModel
+	}
+
 	g.Printf(createTmpl,
-		g.structModel,
-		g.structModel,
+		suffix,
+		suffix,
 		g.structModel,
 		g.structModel,
 		g.structModel,

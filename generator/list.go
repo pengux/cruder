@@ -13,13 +13,17 @@ func List%s(db cruderQueryer, limit, offset uint64, filter cruderSQLFilter, sort
 	sqlParts := []string{"SELECT %s FROM %s"}
 
 	%s
-	if filter, filterArgs := filter.Where(); filter != "" {
-		sqlParts = append(sqlParts, %s + filter)
-		args = append(args, filterArgs...)
+	if filter != nil {
+		if filters, filterArgs := filter.Where(); filters != "" {
+			sqlParts = append(sqlParts, %s + filters)
+			args = append(args, filterArgs...)
+		}
 	}
 
-	if orderBy := sorter.OrderBy(); orderBy != "" {
-		sqlParts = append(sqlParts, "ORDER BY " + orderBy)
+	if sorter != nil {
+		if orderBy := sorter.OrderBy(); orderBy != "" {
+			sqlParts = append(sqlParts, "ORDER BY " + orderBy)
+		}
 	}
 
 	if limit > 0 {
@@ -67,9 +71,14 @@ func (g *Generator) GenerateList() {
 		softDeleteWhere2 = "\"WHERE \""
 	}
 
+	var suffix string
+	if !g.SkipSuffix {
+		suffix = g.structModel
+	}
+
 	g.Printf(listTmpl,
-		g.structModel,
-		g.structModel,
+		suffix,
+		suffix,
 		g.structModel,
 		strings.Join(g.readFieldDBNames(""), ", "),
 		g.TableName,

@@ -27,6 +27,7 @@ type (
 		existingTypes         []cruderType
 		TableName             string
 		PkgName               string
+		SkipSuffix            bool
 		readFields            map[int]string
 		writeFields           map[int]string
 		primaryFieldOffset    int
