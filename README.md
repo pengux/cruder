@@ -27,3 +27,8 @@ Flags:
   -writefields string
         Fields in the struct that should be used for write operations (create,update). Default to all fields
 ```
+
+### Example
+```sh
+cruder --table=foos Foo example/example.go
+```
