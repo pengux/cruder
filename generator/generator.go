@@ -32,6 +32,7 @@ type (
 		writeFields           map[int]string
 		primaryFieldOffset    int
 		softDeleteFieldOffset int
+		sqlImportAdded        bool
 
 		mx      sync.Mutex
 		imports map[string]bool
@@ -79,8 +80,6 @@ func New(pkg *types.Package, structModel string) (*Generator, error) {
 		}
 		gen.writeFields[i] = gen.t.Field(i).Name()
 	}
-
-	gen.addImport("database/sql") // All methods use this package
 
 	return gen, nil
 }

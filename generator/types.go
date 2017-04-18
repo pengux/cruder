@@ -45,6 +45,14 @@ func (g *Generator) GenerateType(t cruderType) {
 		return
 	}
 
+	switch t {
+	case typeExecerInterface, typeQueryerInterface, typeQueryRowerInterface:
+		if !g.sqlImportAdded {
+			g.addImport("database/sql") // All methods use this package
+			g.sqlImportAdded = true
+		}
+	}
+
 	g.HeaderPrintf(cruderTypes[t])
 	g.existingTypes = append(g.existingTypes, t)
 }
