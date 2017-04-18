@@ -10,7 +10,7 @@ const (
 // List%s returns a list of entries from DB based on passed in limit, offset, filters and sorting
 func List%s(db cruderQueryer, limit, offset uint64, filter cruderSQLFilter, sorter cruderSQLSorter) ([]%s, error) {
 	var args []interface{}
-	sqlParts := []string{"SELECT %s FROM %s"}
+	sqlParts := []string{` + "`SELECT %s FROM %s`" + `}
 
 	%s
 	if filter != nil {
