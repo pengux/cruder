@@ -188,7 +188,7 @@ func (g *Generator) readFieldDBNames(prefix string) []string {
 	return fieldNames
 }
 
-// writeFieldNames returns a slice of the read field names.
+// writeFieldNames returns a slice of the write field names.
 // A prefix can be passed which would be added before each name.
 func (g *Generator) writeFieldNames(prefix string) []string {
 	var fieldNames []string
@@ -199,7 +199,13 @@ func (g *Generator) writeFieldNames(prefix string) []string {
 	}
 	sort.Ints(keys)
 	for _, k := range keys {
-		fieldNames = append(fieldNames, prefix+g.writeFields[k])
+		name := prefix + g.writeFields[k]
+
+		// If the field is a struct, then return a pointer expression
+		if _, ok := g.t.Field(k).Type().(*types.Named); ok {
+			name = "&" + name
+		}
+		fieldNames = append(fieldNames, name)
 	}
 
 	return fieldNames
