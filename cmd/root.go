@@ -24,11 +24,8 @@ var RootCmd = &cobra.Command{
 	Use:   "cruder",
 	Short: "Generate code for CRUD functions from a Go struct",
 	Long: `cruder is a tool to generate code for Create, Read, Update, Delete functions
-from a Go struct. It supports multiple generators which currently are:
-
-- pg: Generate CRUD methods for Postgresql, uses the lib/pg package
-
-Functions that can be generated are:
+from a Go struct. It supports multiple generators which are listed in the 'Available
+Commands section'. Functions that can be generated are:
 - Create: Adds an entry
 - Read: Gets an entry using an ID
 - List: Gets multiple entries
