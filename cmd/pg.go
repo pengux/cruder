@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"go/types"
 	"io/ioutil"
 	"log"
 	"os"
@@ -26,25 +25,14 @@ var pgCmd = &cobra.Command{
 	Long:  ``,
 	Args:  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		structModel := args[0]
+		structName := args[0]
 
-		pkg, dir, err := parsePkg(args)
+		pkg, t, dir, err := getPkgAndType(structName, args[1:]...)
 		if err != nil {
-			log.Fatalf("parsing package from provided sources: %s", err)
+			log.Fatal(err)
 		}
 
-		// Check that struct exists in package
-		o := pkg.Scope().Lookup(structModel)
-		if o == nil {
-			log.Fatalf("the struct %s doesn't seem to exists in package %s", structModel, pkg.Name())
-		}
-		// Check that it really is of type struct
-		t, ok := o.Type().Underlying().(*types.Struct)
-		if !ok {
-			log.Fatalf("the type %s is not a struct", structModel)
-		}
-
-		gen, err := pg.New(pkg, t, structModel)
+		gen, err := pg.New(pkg, t, structName)
 		if err != nil {
 			log.Fatalf("could not initialize a new generator: %s", err)
 		}
@@ -104,7 +92,7 @@ var pgCmd = &cobra.Command{
 
 		// Write to file.
 		if pgOutput == "" {
-			baseName := fmt.Sprintf("%s_crud.go", structModel)
+			baseName := fmt.Sprintf("%s_pg_crud.go", structName)
 			pgOutput = filepath.Join(dir, strings.ToLower(baseName))
 		}
 		err = ioutil.WriteFile(pgOutput, out, 0644)
