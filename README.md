@@ -1,8 +1,10 @@
 # cruder
 Generate code for CRUD functions from a Go struct
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/pengux/cruder)](https://goreportcard.com/report/github.com/pengux/cruder)
+
 ## Usage
-```sh
+```
 cruder is a tool to generate code for Create, Read, Update, Delete functions
 from a Go struct. It supports multiple generators which currently are:
 
