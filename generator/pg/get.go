@@ -1,4 +1,4 @@
-package generator
+package pg
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 
 const (
 	getTmpl = `
-// Get%s returns a single entry from DB based on primary key
-func Get%s(db cruderQueryRower, id interface{}) (*%s, error) {
-	var y %s
+// Get%[1]s returns a single entry from DB based on primary key
+func Get%[1]s(db cruderQueryRower, id interface{}) (*%[2]s, error) {
+	var y %[2]s
 	err := db.QueryRow(
 		` + "`" + `SELECT %s FROM %s WHERE %s = $1%s` + "`" + `,
 		id,
@@ -21,7 +21,7 @@ func Get%s(db cruderQueryRower, id interface{}) (*%s, error) {
 )
 
 // GenerateGet generates the Get method for the struct
-func (g *Generator) GenerateGet() {
+func (g *PG) GenerateGet() {
 	g.GenerateType(typeQueryRowerInterface)
 
 	var softDeleteWhere string
@@ -36,8 +36,6 @@ func (g *Generator) GenerateGet() {
 
 	g.Printf(getTmpl,
 		suffix,
-		suffix,
-		g.structModel,
 		g.structModel,
 		strings.Join(g.readFieldDBNames(""), ", "),
 		g.TableName,

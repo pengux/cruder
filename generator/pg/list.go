@@ -1,4 +1,4 @@
-package generator
+package pg
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 
 const (
 	listTmpl = `
-// List%s returns a list of entries from DB based on passed in limit, offset, filters and sorting
-func List%s(db cruderQueryer, limit, offset uint64, filter cruderSQLFilter, sorter cruderSQLSorter) ([]%s, error) {
+// List%[1]s returns a list of entries from DB based on passed in limit, offset, filters and sorting
+func List%[1]s(db cruderQueryer, limit, offset uint64, filter cruderSQLFilter, sorter cruderSQLSorter) ([]%s, error) {
 	var args []interface{}
 	sqlParts := []string{` + "`SELECT %s FROM %s`" + `}
 
@@ -41,9 +41,9 @@ func List%s(db cruderQueryer, limit, offset uint64, filter cruderSQLFilter, sort
 	}
 	defer rows.Close()
 
-	r := []%s{}
+	r := []%[2]s{}
 	for rows.Next() {
-        var e %s
+        var e %[2]s
         if err := rows.Scan(%s); err != nil {
             return nil, err
         }
@@ -56,7 +56,7 @@ func List%s(db cruderQueryer, limit, offset uint64, filter cruderSQLFilter, sort
 )
 
 // GenerateList generates the Get method for the struct
-func (g *Generator) GenerateList() {
+func (g *PG) GenerateList() {
 	g.GenerateType(typeQueryerInterface)
 	g.GenerateType(typeSQLFilterInterface)
 	g.GenerateType(typeSQLSorterInterface)
@@ -78,14 +78,11 @@ func (g *Generator) GenerateList() {
 
 	g.Printf(listTmpl,
 		suffix,
-		suffix,
 		g.structModel,
 		strings.Join(g.readFieldDBNames(""), ", "),
 		g.TableName,
 		softDeleteWhere,
 		softDeleteWhere2,
-		g.structModel,
-		g.structModel,
 		strings.Join(g.readFieldNames("&e."), ", "),
 	)
 }

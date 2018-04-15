@@ -1,4 +1,4 @@
-package generator
+package pg
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 
 const (
 	updateTmpl = `
-// Update%s updates an entry into DB
-func Update%s(db cruderQueryRower, x %s) (*%s, error) {
-	var y %s
+// Update%[1]s updates an entry into DB
+func Update%[1]s(db cruderQueryRower, x %[2]s) (*%[2]s, error) {
+	var y %[2]s
 	err := db.QueryRow(
 		` + "`" + `UPDATE %s SET %s WHERE %s = $%d%s
 		RETURNING %s` + "`" + `,
@@ -22,7 +22,7 @@ func Update%s(db cruderQueryRower, x %s) (*%s, error) {
 )
 
 // GenerateUpdate generates the Update method for the struct
-func (g *Generator) GenerateUpdate() {
+func (g *PG) GenerateUpdate() {
 	g.GenerateType(typeQueryRowerInterface)
 
 	var setParts []string
@@ -42,9 +42,6 @@ func (g *Generator) GenerateUpdate() {
 
 	g.Printf(updateTmpl,
 		suffix,
-		suffix,
-		g.structModel,
-		g.structModel,
 		g.structModel,
 		g.TableName,
 		strings.Join(setParts, ", "),

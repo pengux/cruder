@@ -2,8 +2,6 @@
 package main
 
 import (
-	"database/sql"
-	"log"
 	"time"
 
 	// Postgres driver
@@ -19,20 +17,20 @@ type Foo struct {
 }
 
 func main() {
-	db, err := sql.Open("postgres", "user=peter dbname=foos sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	foo := Foo{
-		Name: "Test",
-	}
-	createdFoo, err := CreateFoo(db, foo)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(createdFoo)
-
-	foos, err := ListFoo(db, 0, 0, nil, nil)
-	log.Println(foos)
+	// db, err := sql.Open("postgres", "user=peter dbname=foos sslmode=disable")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	//
+	// foo := Foo{
+	// 	Name: "Test",
+	// }
+	// createdFoo, err := CreateFoo(db, foo)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// log.Println(createdFoo)
+	//
+	// foos, err := ListFoo(db, 0, 0, nil, nil)
+	// log.Println(foos)
 }

@@ -1,4 +1,4 @@
-package generator
+package pg
 
 type cruderType string
 
@@ -40,7 +40,7 @@ type cruderSQLSorter interface {
 
 // GenerateType adds the cruderType to the header buffer. It keeps track of whether
 // the type is generated or not and thus can be called multiple times safely.
-func (g *Generator) GenerateType(t cruderType) {
+func (g *PG) GenerateType(t cruderType) {
 	if g.typeExist(t) {
 		return
 	}

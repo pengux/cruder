@@ -1,11 +1,11 @@
-package generator
+package pg
 
 import "fmt"
 
 const (
 	deleteTmpl = `
-// Delete%s deletes an entry from DB
-func Delete%s(db cruderExecer, id interface{}) error {
+// Delete%[1]s deletes an entry from DB
+func Delete%[1]s(db cruderExecer, id interface{}) error {
 	result, err := db.Exec(
 		` + "`" + `%s` + "`" + `,
 		id,
@@ -27,7 +27,7 @@ func Delete%s(db cruderExecer, id interface{}) error {
 )
 
 // GenerateDelete generates the Delete method for the struct
-func (g *Generator) GenerateDelete() {
+func (g *PG) GenerateDelete() {
 	g.GenerateType(typeExecerInterface)
 	g.addImport("errors")
 
@@ -52,7 +52,6 @@ func (g *Generator) GenerateDelete() {
 	}
 
 	g.Printf(deleteTmpl,
-		suffix,
 		suffix,
 		deleteQuery,
 	)
