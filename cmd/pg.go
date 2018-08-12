@@ -25,6 +25,7 @@ var pgCmd = &cobra.Command{
 	Long:  ``,
 	Args:  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		var err error
 		structName := args[0]
 
 		pkg, t, dir, err := getPkgAndType(structName, args[1:]...)
@@ -48,19 +49,31 @@ var pgCmd = &cobra.Command{
 		gen.SkipSuffix = skipFuncSuffix
 
 		if len(readFields) > 0 {
-			gen.SetReadFields(readFields)
+			err = gen.SetReadFields(readFields)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		if len(writeFields) > 0 {
-			gen.SetWriteFields(writeFields)
+			err = gen.SetWriteFields(writeFields)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		if len(primaryField) > 0 {
-			gen.SetPrimaryField(primaryField)
+			err = gen.SetPrimaryField(primaryField)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		if len(softDeleteField) > 0 {
-			gen.SetSoftDeleteField(softDeleteField)
+			err = gen.SetSoftDeleteField(softDeleteField)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		for _, funcToGenerate := range funcs {
@@ -92,7 +105,7 @@ var pgCmd = &cobra.Command{
 
 		// Write to file.
 		if pgOutput == "" {
-			baseName := fmt.Sprintf("%s_pg_crud.go", structName)
+			baseName := fmt.Sprintf("%s_pg.crud.go", structName)
 			pgOutput = filepath.Join(dir, strings.ToLower(baseName))
 		}
 		err = ioutil.WriteFile(pgOutput, out, 0644)

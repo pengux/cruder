@@ -59,7 +59,7 @@ func init() {
 	// RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	RootCmd.PersistentFlags().StringVar(&pkgName, "pkg", "", "package name for the generated code, default to the same package from input")
-	RootCmd.PersistentFlags().StringArrayVar(&funcs, "fn", []string{
+	RootCmd.PersistentFlags().StringSliceVar(&funcs, "fn", []string{
 		string(generator.Create),
 		string(generator.Get),
 		string(generator.List),
@@ -69,33 +69,7 @@ func init() {
 	RootCmd.PersistentFlags().BoolVar(&skipFuncSuffix, "skipsuffix", false, "Skip adding the struct name as suffix to the generated functions")
 	RootCmd.PersistentFlags().StringVar(&primaryField, "primaryfield", "", "the field to use as primary key. Default to 'ID' if it exists in the <struct>")
 	RootCmd.PersistentFlags().StringVar(&softDeleteField, "softdeletefield", "", "the field to use for softdelete (should be of type nullable datetime field). Default to 'DeletedAt' if it exists in the <struct>")
-	RootCmd.PersistentFlags().StringArrayVar(&readFields, "readfield", []string{}, "Fields in the struct that should be used for read operations (get,list). Default to all fields except the one used for softdelete")
-	RootCmd.PersistentFlags().StringArrayVar(&writeFields, "writefield", []string{}, "Fields in the struct that should be used for write operations (create,update). Default to all fields")
+	RootCmd.PersistentFlags().StringSliceVar(&readFields, "readfields", []string{}, "Fields in the struct that should be used for read operations (get,list). Default to all fields except the one used for softdelete")
+	RootCmd.PersistentFlags().StringSliceVar(&writeFields, "writefields", []string{}, "Fields in the struct that should be used for write operations (create,update). Default to all fields")
 
 }
-
-// // initConfig reads in config file and ENV variables if set.
-// func initConfig() {
-// 	if cfgFile != "" {
-// 		// Use config file from the flag.
-// 		viper.SetConfigFile(cfgFile)
-// 	} else {
-// 		// Find home directory.
-// 		home, err := homedir.Dir()
-// 		if err != nil {
-// 			fmt.Println(err)
-// 			os.Exit(1)
-// 		}
-//
-// 		// Search config in home directory with name ".cobra" (without extension).
-// 		viper.AddConfigPath(home)
-// 		viper.SetConfigName(".cobra")
-// 	}
-//
-// 	viper.AutomaticEnv() // read in environment variables that match
-//
-// 	// If a config file is found, read it in.
-// 	if err := viper.ReadInConfig(); err == nil {
-// 		fmt.Println("Using config file:", viper.ConfigFileUsed())
-// 	}
-// }

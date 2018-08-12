@@ -88,12 +88,17 @@ func (g *PG) Generate(w io.Writer, fns ...generator.Function) error {
 func (g *PG) SetReadFields(fields []string) error {
 	fieldNames := make(map[int]string)
 	for _, f := range fields {
+		found := false
 		for i := 0; i < g.t.NumFields(); i++ {
 			if strings.TrimSpace(f) == g.t.Field(i).Name() {
 				fieldNames[i] = g.t.Field(i).Name()
-				continue
+				found = true
+				break
 			}
 
+		}
+
+		if !found {
 			return fmt.Errorf("the field %s does not exists in struct %s", f, g.structModel)
 		}
 	}
@@ -107,12 +112,16 @@ func (g *PG) SetReadFields(fields []string) error {
 func (g *PG) SetWriteFields(fields []string) error {
 	fieldNames := make(map[int]string)
 	for _, f := range fields {
+		found := false
 		for i := 0; i < g.t.NumFields(); i++ {
 			if strings.TrimSpace(f) == g.t.Field(i).Name() {
 				fieldNames[i] = g.t.Field(i).Name()
-				continue
+				found = true
+				break
 			}
 
+		}
+		if !found {
 			return fmt.Errorf("the field %s does not exists in struct %s", f, g.structModel)
 		}
 	}
