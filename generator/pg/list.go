@@ -50,7 +50,7 @@ func List%[1]ss(db cruderQueryer, limit, offset uint64, filter cruderSQLFilter, 
         r = append(r, e)
     }
 
-	return r, err
+	return r, rows.Err()
 }
 `
 )
